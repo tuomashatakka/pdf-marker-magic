@@ -3,7 +3,7 @@ import { useAnnotations, AnnotationColor } from "@/context/AnnotationContext";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Cursor,
+  MousePointer,
   Type,
   Square,
   MessageSquare,
@@ -30,7 +30,7 @@ const AnnotationToolbar = () => {
   } = useAnnotations();
 
   const toolOptions = [
-    { id: "select", icon: Cursor, label: "Select" },
+    { id: "select", icon: MousePointer, label: "Select" },
     { id: "text", icon: Type, label: "Text Annotation" },
     { id: "rectangle", icon: Square, label: "Rectangle Annotation" },
   ];
