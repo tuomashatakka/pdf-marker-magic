@@ -6,12 +6,10 @@ import RectangleAnnotation from "./annotations/RectangleAnnotation";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import { useToast } from "@/hooks/use-toast";
 
-// Set the worker for PDF.js - using a direct import approach to avoid network issues
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
+// Set worker directly from the pdfjs-dist package
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 const PDFViewer = () => {
   const { 
@@ -25,22 +23,35 @@ const PDFViewer = () => {
     activeColor
   } = useAnnotations();
   
+  const { toast } = useToast();
   const viewerRef = useRef<HTMLDivElement>(null);
   const [numPages, setNumPages] = useState<number>(0);
   const [currentSelectionRange, setCurrentSelectionRange] = useState<Range | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [pdfLoaded, setPdfLoaded] = useState<boolean>(false);
   
-  // Sample PDF for demo purposes - contains text and tables
-  const pdfSrc = "https://www.w3.org/WAI/WCAG21/working-examples/pdf-table/table.pdf";
+  // Using a different sample PDF that is more reliable
+  const pdfSrc = "https://www.africau.edu/images/default/sample.pdf";
   
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
     setPdfError(null);
+    setPdfLoaded(true);
+    toast({
+      title: "PDF Loaded Successfully",
+      description: `Loaded ${numPages} pages`,
+    });
   }
   
   function onDocumentLoadError(error: Error) {
     console.error("Error loading PDF:", error);
     setPdfError("Failed to load PDF file. Please try again later.");
+    setPdfLoaded(false);
+    toast({
+      title: "Error Loading PDF",
+      description: "Could not load the PDF file. Please try again.",
+      variant: "destructive",
+    });
   }
   
   // Handle text selection for text annotations
@@ -59,7 +70,7 @@ const PDFViewer = () => {
     const x = (rect.left - viewerRect.left) / (zoom / 100);
     const y = (rect.top - viewerRect.top) / (zoom / 100);
     
-    const newAnnotation = {
+    const newAnnotation: Omit<Annotation, "id" | "createdAt" | "icon"> = {
       type: "text" as const,
       position: { 
         x, 
@@ -68,7 +79,7 @@ const PDFViewer = () => {
         height: (rect.height) / (zoom / 100)
       },
       content: "Comment on: " + range.toString().substring(0, 50) + (range.toString().length > 50 ? "..." : ""),
-      color: activeColor, // Use activeColor from context instead of hardcoded string
+      color: activeColor,
       pageNumber,
       textContent: range.toString(),
       textRange: {
@@ -108,7 +119,7 @@ const PDFViewer = () => {
       type: "rectangle",
       position: { x, y, width: 150, height: 100 },
       content: "",
-      color: activeColor, // Use activeColor from context instead of hardcoded string
+      color: activeColor,
       pageNumber,
     });
   };
