@@ -18,15 +18,15 @@ const TextAnnotation = ({ annotation }: TextAnnotationProps) => {
   const getIconComponent = (iconName: string) => {
     switch (iconName) {
       case "MessageSquare":
-        return <MessageSquare className="h-4 w-4" />;
+        return <MessageSquare className="h-4 w-4 text-white" />;
       case "AlertCircle":
-        return <AlertCircle className="h-4 w-4" />;
+        return <AlertCircle className="h-4 w-4 text-white" />;
       case "Flag":
-        return <Flag className="h-4 w-4" />;
+        return <Flag className="h-4 w-4 text-white" />;
       case "HelpCircle":
-        return <HelpCircle className="h-4 w-4" />;
+        return <HelpCircle className="h-4 w-4 text-white" />;
       default:
-        return <MessageCircle className="h-4 w-4" />;
+        return <MessageCircle className="h-4 w-4 text-white" />;
     }
   };
 
@@ -50,6 +50,16 @@ const TextAnnotation = ({ annotation }: TextAnnotationProps) => {
         onClick={(e) => {
           e.stopPropagation();
           selectAnnotation(annotation);
+          
+          // If this is a text annotation with a range, try to highlight it
+          if (annotation.textRange && annotation.textContent) {
+            // This is a simplified approach - a real implementation would need to find the exact elements
+            const selection = window.getSelection();
+            if (selection) {
+              selection.removeAllRanges();
+              // We'd need more complex logic to find the exact range
+            }
+          }
         }}
       >
         <div 
@@ -67,6 +77,11 @@ const TextAnnotation = ({ annotation }: TextAnnotationProps) => {
             <p className="text-gray-600 font-medium">
               {annotation.content || "Add your comment here..."}
             </p>
+            {annotation.textContent && (
+              <div className="mt-2 p-1 bg-gray-100 rounded text-xs italic">
+                "{annotation.textContent}"
+              </div>
+            )}
           </div>
         )}
       </div>

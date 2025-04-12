@@ -102,11 +102,11 @@ const RectangleAnnotation = ({ annotation }: RectangleAnnotationProps) => {
       >
         <div 
           className={cn(
-            "w-full h-full border-2 bg-opacity-10",
+            "w-full h-full border-2",
             isSelected ? "ring-2 ring-white" : ""
           )}
           style={{ 
-            backgroundColor: `var(--annotation-${annotation.color})`,
+            backgroundColor: `var(--annotation-${annotation.color}30)`, /* 30 for 30% opacity */
             borderColor: `var(--annotation-${annotation.color})`,
           }}
         />

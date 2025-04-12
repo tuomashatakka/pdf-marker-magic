@@ -28,6 +28,12 @@ export interface Annotation {
   icon?: string;
   createdAt: Date;
   pageNumber: number;
+  // For text annotations
+  textContent?: string;
+  textRange?: {
+    startOffset: number;
+    endOffset: number;
+  };
 }
 
 interface AnnotationContextType {
@@ -37,7 +43,7 @@ interface AnnotationContextType {
   activeIcon: string;
   zoom: number;
   selectedAnnotation: Annotation | null;
-  addAnnotation: (annotation: Omit<Annotation, "id" | "createdAt">) => void;
+  addAnnotation: (annotation: Omit<Annotation, "id" | "createdAt" | "icon">) => void;
   updateAnnotation: (id: string, data: Partial<Annotation>) => void;
   deleteAnnotation: (id: string) => void;
   setActiveTool: (tool: AnnotationTool) => void;
@@ -65,23 +71,35 @@ export const AnnotationProvider: React.FC<{ children: ReactNode }> = ({ children
   const [zoom, setZoom] = useState<number>(100);
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
 
-  const addAnnotation = useCallback((annotationData: Omit<Annotation, "id" | "createdAt">) => {
+  const addAnnotation = useCallback((annotationData: Omit<Annotation, "id" | "createdAt" | "icon">) => {
     const newAnnotation: Annotation = {
       ...annotationData,
       id: nanoid(),
       createdAt: new Date(),
+      icon: activeIcon
     };
     setAnnotations((prev) => [...prev, newAnnotation]);
-  }, []);
+  }, [activeIcon]);
 
   const updateAnnotation = useCallback((id: string, data: Partial<Annotation>) => {
     setAnnotations((prev) =>
       prev.map((anno) => (anno.id === id ? { ...anno, ...data } : anno))
     );
+    
+    // Also update the selected annotation if it's the one being modified
+    setSelectedAnnotation(current => {
+      if (current?.id === id) {
+        return { ...current, ...data };
+      }
+      return current;
+    });
   }, []);
 
   const deleteAnnotation = useCallback((id: string) => {
     setAnnotations((prev) => prev.filter((anno) => anno.id !== id));
+    
+    // Deselect if the deleted annotation was selected
+    setSelectedAnnotation(current => current?.id === id ? null : current);
   }, []);
 
   const selectAnnotation = useCallback((annotation: Annotation | null) => {
