@@ -7,8 +7,11 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
-// Set the worker source for PDF.js
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Set the worker for PDF.js - using a direct import approach to avoid network issues
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 const PDFViewer = () => {
   const { 
@@ -25,12 +28,19 @@ const PDFViewer = () => {
   const viewerRef = useRef<HTMLDivElement>(null);
   const [numPages, setNumPages] = useState<number>(0);
   const [currentSelectionRange, setCurrentSelectionRange] = useState<Range | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
   
   // Sample PDF for demo purposes - contains text and tables
   const pdfSrc = "https://www.w3.org/WAI/WCAG21/working-examples/pdf-table/table.pdf";
   
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
+    setPdfError(null);
+  }
+  
+  function onDocumentLoadError(error: Error) {
+    console.error("Error loading PDF:", error);
+    setPdfError("Failed to load PDF file. Please try again later.");
   }
   
   // Handle text selection for text annotations
@@ -123,7 +133,10 @@ const PDFViewer = () => {
       <Document
         file={pdfSrc}
         onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={onDocumentLoadError}
         className="flex flex-col items-center gap-5"
+        loading={<div className="text-center py-10">Loading PDF...</div>}
+        error={<div className="text-center py-10 text-red-500">{pdfError || "Failed to preview PDF"}</div>}
       >
         {Array.from(new Array(numPages), (_, index) => (
           <div key={`page_${index + 1}`} className="relative" style={{ width: "100%" }}>
