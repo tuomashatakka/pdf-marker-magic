@@ -1,6 +1,6 @@
 
 import { useRef, useState, useEffect } from "react";
-import { useAnnotations, Annotation } from "@/context/AnnotationContext";
+import { useAnnotations, Annotation, AnnotationColor } from "@/context/AnnotationContext";
 import TextAnnotation from "./annotations/TextAnnotation";
 import RectangleAnnotation from "./annotations/RectangleAnnotation";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -18,7 +18,8 @@ const PDFViewer = () => {
     zoom,
     selectedAnnotation,
     selectAnnotation,
-    updateAnnotation
+    updateAnnotation,
+    activeColor
   } = useAnnotations();
   
   const viewerRef = useRef<HTMLDivElement>(null);
@@ -57,7 +58,7 @@ const PDFViewer = () => {
         height: (rect.height) / (zoom / 100)
       },
       content: "Comment on: " + range.toString().substring(0, 50) + (range.toString().length > 50 ? "..." : ""),
-      color: "red",
+      color: activeColor, // Use activeColor from context instead of hardcoded string
       pageNumber,
       textContent: range.toString(),
       textRange: {
@@ -97,7 +98,7 @@ const PDFViewer = () => {
       type: "rectangle",
       position: { x, y, width: 150, height: 100 },
       content: "",
-      color: "blue",
+      color: activeColor, // Use activeColor from context instead of hardcoded string
       pageNumber,
     });
   };
